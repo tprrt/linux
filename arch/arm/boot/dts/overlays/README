@@ -1756,6 +1756,11 @@ Params: pin_d4                  GPIO pin for data pin D4 (default 6)
 
         display_width           Width of the display in characters (default 16)
 
+Name:   hx8399-lcd
+Info:   Configures an HX8399 compatible LCD display. Uses TODO.
+Load:   dtoverlay=hx8399-lcd,<param>=<val>
+Params: TODO
+
 
 Name:   hdmi-backlight-hwhack-gpio
 Info:   Devicetree overlay for GPIO based backlight on/off capability.
