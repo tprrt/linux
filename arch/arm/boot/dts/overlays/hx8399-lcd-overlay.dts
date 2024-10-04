@@ -2,82 +2,111 @@
 /plugin/;
 
 / {
-    compatible = "brcm,bcm2835";
+	compatible = "brcm,bcm2835";
 
-    fragment@0 {
-        target = <&dsi1>;
-        __overlay__ {
-            status = "okay";
-        };
-    };
-
-    fragment@1 {
-        target = <&dsi1_pins>;
-        __overlay__ {
-            brcm,pins = <12 13>;
-            brcm,function = <6>;
-            brcm,pull = <0>;
-        };
-    };
-
-    fragment@2 {
-        target-path = "/";
-        __overlay__ {
-            dsi_panel: panel {
-                compatible = "youritech,et055wu01-tt";
-                reg = <0>;
-
-                ports {
-                    #address-cells = <1>;
-                    #size-cells = <0>;
-
-                    port@0 {
-                        reg = <0>;
-
-                        panel_in: endpoint {
-                            remote-endpoint = <&dsi_out>;
-                        };
-                    };
-                };
-
-                panel-timing {
-                    clock-frequency = <50000000>;
-                    hactive = <1920>;
-                    vactive = <1080>;
-                    hfront-porch = <20>;
-                    hback-porch = <30>;
-                    hsync-len = <10>;
-                    vfront-porch = <15>;
-                    vback-porch = <8>;
-                    vsync-len = <4>;
-                };
-            };
-        };
-    };
-
-    fragment@3 {
-        target = <&dsi_out>;  // Target the DSI output
-        __overlay__ {
-	    port {
-	        dsi_out: endpoint {
-                    remote-endpoint = <&panel_in>;  // Link back to the panel
+	fragment@0 {
+		target = <&dsi1>;
+		__overlay__ {
+			status = "okay";
 		};
-	    };
-        };
-    };
+	};
 
-    fragment@4 {
-        target = <&backlight>;  // Add a backlight controller
-        __overlay__ {
-            status = "okay";
-            brightness-levels = <0 128 255>;  // Define brightness levels
-            default-brightness-level = <128>;  // Set the default brightness level
-            num-interpolated-steps = <2>;
-        };
-    };
+	fragment@1 {
+		target = <&dsi1_pins>;
+		__overlay__ {
+			brcm,pins = <12 13>;
+			brcm,function = <6>;
+			brcm,pull = <0>;
+		};
+	};
 
-    __overrides__ {
-        panel_name = <&panel>,"compatible";
-        brightness = <&backlight>,"brightness-levels";
-    };
+	fragment@2 {
+		target-path = "/";
+		__overlay__ {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			dsi_panel: panel@0 {
+				compatible = "youritech,et055wu01-tt";
+				reg = <0>;
+
+				interrupt-parent = <&gpio>;
+				interrupts = <26>;
+
+				ports {
+					#address-cells = <1>;
+					#size-cells = <0>;
+					port@0 {
+						reg = <0>;
+
+						panel_in: endpoint {
+							remote-endpoint = <&dsi_out>;
+						};
+					};
+				};
+
+				panel-timing {
+					clock-frequency = <50000000>;
+					hactive = <1920>;
+					vactive = <1080>;
+					hfront-porch = <20>;
+					hback-porch = <30>;
+					hsync-len = <10>;
+					vfront-porch = <15>;
+					vback-porch = <8>;
+					vsync-len = <4>;
+				};
+			};
+		};
+	};
+
+	fragment@3 {
+		target = <&dsi_out>;
+		__overlay__ {
+			port {
+				dsi_out: endpoint {
+					remote-endpoint = <&panel_in>;
+				};
+			};
+		};
+	};
+
+	fragment@4 {
+		target = <&gpio>;
+		__overlay__ {
+			pwm0_pins: pwm0_pins {
+				brcm,pins = <12>;
+				brcm,function = <4>; /* Alt0 */
+			};
+		};
+	};
+
+	fragment@5 {
+		target = <&pwm>;
+		__overlay__ {
+			pinctrl-names = "default";
+			pinctrl-0 = <&pwm0_pins>;
+			status = "okay";
+		};
+	};
+
+	fragment@6 {
+		target = <&pwm>;
+		__overlay__ {
+			status = "okay";
+			backlight {
+				compatible = "pwm-backlight";
+				pwms = <&pwm 0 1000000 0>;
+				brightness-levels = <0 128 255>;
+				default-brightness-level = <128>;
+				num-interpolated-steps = <2>;
+			};
+		};
+	};
+
+	__overrides__ {
+		gpio_pin = <&pwm0_pins>, "brcm,pins:0";
+		func = <&pwm0_pins>,"brcm,function:0";
+		panel_name = <&dsi_panel>,"compatible";
+		brightness = <&backlight>,"brightness-levels";
+	};
 };
