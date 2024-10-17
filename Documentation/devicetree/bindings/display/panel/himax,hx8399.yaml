@@ -26,8 +26,6 @@ properties:
 
   reg: true
 
-  reset-gpios: true
-
   backlight: true
 
   port: true
@@ -35,17 +33,12 @@ properties:
   vcc-supply:
     description: Panel power supply
 
-  iovcc-supply:
-    description: I/O voltage supply
-
 required:
   - compatible
   - reg
-  - reset-gpios
   - backlight
   - port
   - vcc-supply
-  - iovcc-supply
 
 additionalProperties: false
 
@@ -60,8 +53,6 @@ examples:
             compatible = "youritech,et055wu01-tt", "himax,hx8399";
             reg = <0>;
             vcc-supply = <&reg_2v8_p>;
-            iovcc-supply = <&reg_1v8_p>;
-            reset-gpios = <&gpio3 13 GPIO_ACTIVE_LOW>;
             backlight = <&backlight>;
 
             port {

@@ -64,9 +64,7 @@
 struct hx8399 {
 	struct device *dev;
 	struct drm_panel panel;
-	struct gpio_desc *reset_gpio;
 	struct regulator *vcc;
-	struct regulator *iovcc;
 	bool prepared;
 
 	const struct hx8399_panel_desc *desc;
@@ -284,9 +282,6 @@ static int hx8399_unprepare(struct drm_panel *panel)
 	if (!ctx->prepared)
 		return 0;
 
-	gpiod_set_value_cansleep(ctx->reset_gpio, 1);
-
-	regulator_disable(ctx->iovcc);
 	regulator_disable(ctx->vcc);
 
 	ctx->prepared = false;
@@ -302,32 +297,17 @@ static int hx8399_prepare(struct drm_panel *panel)
 	if (ctx->prepared)
 		return 0;
 
-	gpiod_set_value_cansleep(ctx->reset_gpio, 1);
-
 	ret = regulator_enable(ctx->vcc);
 	if (ret) {
 		dev_err(ctx->dev, "Failed to enable vcc supply: %d\n", ret);
 		return ret;
 	}
 
-	ret = regulator_enable(ctx->iovcc);
-	if (ret) {
-		dev_err(ctx->dev, "Failed to enable iovcc supply: %d\n", ret);
-		goto disable_vcc;
-	}
-
-	gpiod_set_value_cansleep(ctx->reset_gpio, 0);
-
 	msleep(180);
 
 	ctx->prepared = true;
 
 	return 0;
-
-disable_vcc:
-	gpiod_set_value_cansleep(ctx->reset_gpio, 1);
-	regulator_disable(ctx->vcc);
-	return ret;
 }
 
 static int hx8399_get_modes(struct drm_panel *panel,
@@ -372,11 +352,6 @@ static int hx8399_probe(struct mipi_dsi_device *dsi)
 	if (!ctx)
 		return -ENOMEM;
 
-	ctx->reset_gpio = devm_gpiod_get(dev, "reset", GPIOD_OUT_HIGH);
-	if (IS_ERR(ctx->reset_gpio))
-		return dev_err_probe(dev, PTR_ERR(ctx->reset_gpio),
-				     "Failed to get reset gpio\n");
-
 	mipi_dsi_set_drvdata(dsi, ctx);
 
 	ctx->dev = dev;
@@ -390,11 +365,6 @@ static int hx8399_probe(struct mipi_dsi_device *dsi)
 	if (IS_ERR(ctx->vcc))
 		return dev_err_probe(dev, PTR_ERR(ctx->vcc),
 				     "Failed to request vcc regulator\n");
-
-	ctx->iovcc = devm_regulator_get(dev, "iovcc");
-	if (IS_ERR(ctx->iovcc))
-		return dev_err_probe(dev, PTR_ERR(ctx->iovcc),
-				     "Failed to request iovcc regulator\n");
 
 	drm_panel_init(&ctx->panel, dev, &hx8399_drm_funcs,
 		       DRM_MODE_CONNECTOR_DSI);
