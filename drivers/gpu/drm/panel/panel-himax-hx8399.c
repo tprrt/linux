@@ -170,7 +170,7 @@ static int et055wu01_init_sequence(struct hx8399 *ctx)
 			       0x9D, 0xA5, 0xA9, 0xAE, 0xB7, 0xBA, 0xC2, 0xB6,
 			       0xC2, 0xC4, 0x64, 0x5F, 0x69, 0x77);
 
-#if 1
+#if 0
 	// TODO DONOTMERGE
 	/* 6.3.9 Set register bank (BDh) */
 	mipi_dsi_dcs_write_seq(dsi, HX8399_CMD_SETREGBANK,
@@ -386,11 +386,6 @@ static int hx8399_probe(struct mipi_dsi_device *dsi)
 		ctx->desc->mode->hdisplay, ctx->desc->mode->vdisplay,
 		drm_mode_vrefresh(ctx->desc->mode),
 		mipi_dsi_pixel_format_to_bpp(dsi->format), dsi->lanes);
-
-#if 1
-	// TODO DONOTMERGE
-	et055wu01_init_sequence(ctx);
-#endif
 
 	return 0;
 }

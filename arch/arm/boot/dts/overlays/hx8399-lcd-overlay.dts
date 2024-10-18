@@ -32,7 +32,7 @@
 		};
 	};
 
-	fragment@4 {
+	fragment@1 {
 		target = <&gpio>;
 		__overlay__ {
 			pwm0_pins: pwm0_pins {
@@ -42,26 +42,34 @@
 		};
 	};
 
-	fragment@5 {
+	fragment@2 {
 		target = <&pwm>;
 		__overlay__ {
 			pinctrl-names = "default";
 			pinctrl-0 = <&pwm0_pins>;
+			assigned-clock-rates = <1000000>;
 			status = "okay";
 		};
 	};
 
-	fragment@6 {
+	fragment@3 {
 		target = <&pwm>;
 		__overlay__ {
 			status = "okay";
-			dsi_backlight: backlight {
-				compatible = "pwm-backlight";
-				pwms = <&pwm 0 1000000 0>;
-				brightness-levels = <0 128 255>;
-				default-brightness-level = <128>;
-				num-interpolated-steps = <2>;
-			};
 		};
+	};
+
+	fragment@4 {
+		target-path = "/";
+		__overlay__ {
+			dsi_backlight: dsi_backlight {
+				compatible = "pwm-backlight";
+				brightness-levels = <0 6 8 12 16 24 32 40 48 64 96 128 160 192 224 255>;
+				default-brightness-level = <15>;
+				pwms = <&pwm 0 200000 0>;
+				power-supply = <&vdd_5v0_reg>;
+				status = "okay";
+			};
+		 };
 	};
 };
