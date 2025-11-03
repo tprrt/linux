@@ -87,7 +87,7 @@ static inline struct hx8399 *panel_to_hx8399(struct drm_panel *panel)
 static int et055wu01_init_sequence(struct hx8399 *ctx)
 {
 	struct mipi_dsi_device *dsi = to_mipi_dsi_device(ctx->dev);
-
+#if 0
 	/* 6.3.6 SETEXTC: Set extension command (B9h) */
 	mipi_dsi_dcs_write_seq(dsi, HX8399_CMD_SETEXTC,
 			       0xff, 0x83, 0x99);
@@ -174,6 +174,14 @@ static int et055wu01_init_sequence(struct hx8399 *ctx)
 	/* 6.3.16 SETPANEL (CCh) */
 	mipi_dsi_dcs_write_seq(dsi, HX8399_CMD_SETPANEL,
 			       0x08);
+#endif
+
+	// TODO HACK
+	mipi_dsi_dcs_write_seq(dsi, HX8399_CMD_SETREGBANK, 0x01);
+	mipi_dsi_dcs_write_seq(dsi, HX8399_CMD_SETDISP, 0xC8);
+	mipi_dsi_dcs_write_seq(dsi, HX8399_CMD_SETREGBANK, 0x00);
+	dev_info(ctx->dev, ">>>> 0000\n");
+	// HACK
 
 	return 0;
 }
@@ -206,7 +214,7 @@ static int hx8399_enable(struct drm_panel *panel)
 	struct hx8399 *ctx = panel_to_hx8399(panel);
 	struct mipi_dsi_device *dsi = to_mipi_dsi_device(ctx->dev);
 	int ret;
-
+msleep(50);
 	ret = ctx->desc->init_sequence(ctx);
 	if (ret) {
 		dev_err(ctx->dev, "Panel init sequence failed: %d\n", ret);
@@ -227,7 +235,7 @@ static int hx8399_enable(struct drm_panel *panel)
 		dev_err(ctx->dev, "Failed to turn on the display: %d\n", ret);
 		goto sleep_in;
 	}
-
+	dev_info(ctx->dev, ">>>> 9999\n");
 	return 0;
 
 sleep_in:
