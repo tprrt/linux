@@ -1346,6 +1346,15 @@ endmenu
 
 menu "MFD GPIO expanders"
 
+config GPIO_AAEON_MCU
+	tristate "Aaeon MCU GPIO support"
+	depends on MFD_AAEON_MCU
+	help
+	  Select this option to enable GPIO support for the Aaeon SRG-IMX8P
+	  onboard MCU. This driver provides access to GPIO pins and GPO
+	  (General Purpose Output) pins controlled by the microcontroller.
+	  The driver handles both input and output configuration.
+
 config GPIO_ADP5520
 	tristate "GPIO Support for ADP5520 PMIC"
 	depends on PMIC_ADP5520
